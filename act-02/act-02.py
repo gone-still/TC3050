@@ -1,4 +1,4 @@
-# File        :   act-01.py (Activity 2 of 2022 Spring Vision Course)
+# File        :   act-02.py (Activity 2 of 2022 Spring Vision Course)
 # Version     :   1.0.0
 # Description :   Introducing histograms + thresholding
 # Date:       :   Jan 31, 2022
