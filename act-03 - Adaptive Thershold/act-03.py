@@ -1,5 +1,5 @@
 # File        :   act-03.py (Activity 3 of 2022 Spring Vision Course)
-# Version     :   1.0.0
+# Version     :   1.0.1
 # Description :   Introducing adaptive thresholding
 # Date:       :   Feb 02, 2022
 # Author      :   Ricardo Acevedo-Avila (racevedoaa@gmail.com)
@@ -56,6 +56,13 @@ plt.show()
 # Try thresholding the image via Otsu:
 automaticThreshold, binaryImage = cv2.threshold(grayscaleImage, 0, 255, cv2.THRESH_OTSU)
 showImage("binaryImage [Otsu 1]", binaryImage)
+writeImage(path+"sudokuGlobalBinary", binaryImage)
+
+# [Post] Try to clean the image applying
+# Gaussian Blur to the grayscale image:
+# sigma = (3, 3)
+# grayscaleImage = cv2.GaussianBlur(grayscaleImage, sigma, 0)
+# showImage("grayscaleImage [Blurred]", grayscaleImage)
 
 # Better ty to threshold local areas (windows) of the image
 # Let's apply adaptive thresholding (Gaussian):
@@ -76,19 +83,10 @@ showImage("binaryImage [Adaptive - Gaussian]", binaryImage)
 # showImage("binaryImage [Adaptive - Mean]", binaryImage)
 
 
-# Try to clean the image applying
-# Gaussian Blur:
-sigma = (3, 3)
-binaryImage = cv2.GaussianBlur(binaryImage, sigma, 0)
-showImage("binaryImage [Blurred]", binaryImage)
-
-automaticThreshold, binaryImage = cv2.threshold(binaryImage, 0, 255, cv2.THRESH_OTSU)
-showImage("binaryImage [Otsu 2]", binaryImage)
-
 # Invert the image:
 binaryImage = cv2.subtract(255, binaryImage)
 showImage("binaryImage [Inverted]", binaryImage)
 
-# The noise is still there. We note that the area of the individual "blobs" could be
+# Some noise is still there. We note that the area of the individual "blobs" could be
 # use to filter out the noise. Small noise has smaller area than the rest of the blobs
 # How can we compute the area of the _individual blobs_ ?
