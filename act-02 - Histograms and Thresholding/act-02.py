@@ -1,7 +1,7 @@
-# File        :   act-01.py (Activity 2 of 2022 Spring Vision Course)
-# Version     :   1.0.0
+# File        :   act-02.py (Activity 2 of 2022 Spring Vision Course)
+# Version     :   1.1.0
 # Description :   Introducing histograms + thresholding
-# Date:       :   Jan 31, 2022
+# Date:       :   Feb 02, 2022
 # Author      :   Ricardo Acevedo-Avila (racevedoaa@gmail.com)
 # License     :   MIT
 
@@ -74,7 +74,8 @@ plt.show()
 # Fixed Threshold, try to separate the foreground object from
 # the background:
 # Try values 50, 100, 150, 200, 230
-_, binaryImage = cv2.threshold(grayscaleImage, 230, 255, cv2.THRESH_BINARY)
+binaryThresh = 230
+_, binaryImage = cv2.threshold(grayscaleImage, binaryThresh, 255, cv2.THRESH_BINARY)
 
 # Show image:
 showImage("binaryImage", binaryImage)
@@ -84,9 +85,37 @@ showImage("binaryImage", binaryImage)
 # Invert the image:
 binaryImage = 255 - binaryImage
 
+# Show the image:
 showImage("binaryImage [Inverted]", binaryImage)
+writeImage(path + "binaryMug-nonProcessed", binaryImage)
+
 # Count white pixels:
 objectArea = cv2.countNonZero(binaryImage)
 
 # print the value:
-print("Object Area: "+str(objectArea))
+print("Object Area (Raw): " + str(objectArea))
+
+# Try to clean the image applying
+# Gaussian Blur:
+sigma = (5, 5)
+binaryImage = cv2.GaussianBlur(binaryImage, sigma, 0)
+showImage("binaryImage [Blurred]", binaryImage)
+
+# Compute threshold again:
+_, binaryImage = cv2.threshold(binaryImage, binaryThresh, 255, cv2.THRESH_BINARY)
+
+# Show image, no more compression artifacts:
+showImage("binaryImage [Revisted]", binaryImage)
+writeImage(path + "binaryMug-processed", binaryImage)
+
+# Count white pixels:
+objectArea = cv2.countNonZero(binaryImage)
+
+# print the value:
+print("Object Area (Processed): " + str(objectArea))
+
+# Automatic thresholding (Otsu)
+automaticThreshold, binaryImage = cv2.threshold(grayscaleImage, 0, 255, cv2.THRESH_OTSU)
+showImage("binaryImage [Otsu]", binaryImage)
+# Print the threshold value:
+print("Otsu's threshold is: "+str(automaticThreshold))
