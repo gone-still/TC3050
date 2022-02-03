@@ -1,5 +1,9 @@
 # File        :   act-02.py (Activity 2 of 2022 Spring Vision Course)
+<<<<<<< HEAD:act-02 - Histograms and Thresholding/act-02.py
 # Version     :   1.1.0
+=======
+# Version     :   1.0.0
+>>>>>>> 139ee5429d307f0e4cb96b65264ce4ee8dcf6e08:act-02/act-02.py
 # Description :   Introducing histograms + thresholding
 # Date:       :   Feb 02, 2022
 # Author      :   Ricardo Acevedo-Avila (racevedoaa@gmail.com)
@@ -93,6 +97,7 @@ writeImage(path + "binaryMug-nonProcessed", binaryImage)
 objectArea = cv2.countNonZero(binaryImage)
 
 # print the value:
+<<<<<<< HEAD:act-02 - Histograms and Thresholding/act-02.py
 print("Object Area (Raw): " + str(objectArea))
 
 # Try to clean the image applying
@@ -119,3 +124,6 @@ automaticThreshold, binaryImage = cv2.threshold(grayscaleImage, 0, 255, cv2.THRE
 showImage("binaryImage [Otsu]", binaryImage)
 # Print the threshold value:
 print("Otsu's threshold is: "+str(automaticThreshold))
+=======
+print("Object Area: "+str(objectArea))
+>>>>>>> 139ee5429d307f0e4cb96b65264ce4ee8dcf6e08:act-02/act-02.py
