@@ -1,7 +1,7 @@
 # File        :   act-02.py (Activity 2 of 2022 Spring Vision Course)
-# Version     :   1.1.0
+# Version     :   1.1.1
 # Description :   Introducing histograms + thresholding
-# Date:       :   Feb 02, 2022
+# Date:       :   Mar 01, 2022
 # Author      :   Ricardo Acevedo-Avila (racevedoaa@gmail.com)
 # License     :   MIT
 
@@ -11,6 +11,17 @@ import cv2
 # Import pyplot from matplotlib to visualize
 # histograms quickly:
 from matplotlib import pyplot as plt
+
+
+# Read an image:
+def readImage(imagePath):
+    # Loads image:
+    inputImage = cv2.imread(imagePath)
+    # Checks if image was successfully loaded:
+    if inputImage is None:
+        print("readImage>> Error: Could not load Input image.")
+
+    return inputImage
 
 
 # Defines a re-sizable image window:
@@ -31,8 +42,8 @@ def writeImage(imagePath, inputImage):
 path = "D://opencvImages//"
 fileName = "blueMug.png"
 
-# Reading an image in default mode:
-inputImage = cv2.imread(path + fileName)
+# Reading an image:
+inputImage = readImage(path + fileName)
 
 # Get image dimensions
 originalImageHeight, originalImageWidth = inputImage.shape[:2]
@@ -74,7 +85,7 @@ plt.show()
 # Fixed Threshold, try to separate the foreground object from
 # the background:
 # Try values 50, 100, 150, 200, 230
-binaryThresh = 230
+binaryThresh = 50
 _, binaryImage = cv2.threshold(grayscaleImage, binaryThresh, 255, cv2.THRESH_BINARY)
 
 # Show image:
@@ -118,4 +129,4 @@ print("Object Area (Processed): " + str(objectArea))
 automaticThreshold, binaryImage = cv2.threshold(grayscaleImage, 0, 255, cv2.THRESH_OTSU)
 showImage("binaryImage [Otsu]", binaryImage)
 # Print the threshold value:
-print("Otsu's threshold is: "+str(automaticThreshold))
+print("Otsu's threshold is: " + str(automaticThreshold))
