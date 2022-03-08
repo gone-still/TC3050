@@ -1,14 +1,23 @@
 # File        :   act-04.py (Activity 4 of 2022 Spring Vision Course)
-# Version     :   1.0.0
+# Version     :   1.0.1
 # Description :   HSV-based Segmentation + Hough's Circle Detector
-# Date:       :   Feb 07, 2022
+# Date:       :   Mar 07, 2022
 # Author      :   Ricardo Acevedo-Avila (racevedoaa@gmail.com)
 # License     :   MIT
 
 import numpy as np
 import cv2
 
+# Read an image:
+def readImage(imagePath):
+    # Loads image:
+    inputImage = cv2.imread(imagePath)
+    # Checks if image was successfully loaded:
+    if inputImage is None:
+        print("readImage>> Error: Could not load Input image.")
 
+    return inputImage
+    
 # Defines a re-sizable image window:
 def showImage(imageName, inputImage, delay=0):
     cv2.namedWindow(imageName, flags=cv2.WINDOW_GUI_NORMAL)
@@ -28,7 +37,7 @@ path = "D://opencvImages//"
 fileName = "blueCircles.png"
 
 # Reading an image in default mode:
-inputImage = cv2.imread(path + fileName)
+inputImage = readImage(path + fileName)
 showImage("inputImage", inputImage)
 
 # Get input image dimensions:
@@ -39,6 +48,9 @@ print("Image Height: " + str(imageHeight) + " Image Width: " + str(imageWidth) +
 # Set the low threshold for the 3 channels:
 # lowThreshold = [130, 130, 20]
 # highThreshold = [255, 255, 110]
+
+# lowThreshold = [100, 100, 10]  # BGR
+# highThreshold = [255, 255, 100]
 
 lowThreshold = [210, 210, 20]  # BGR
 highThreshold = [255, 255, 70]
@@ -117,6 +129,7 @@ hsvMask = cv2.inRange(hsvImage, lowThreshold, highThreshold)
 
 # Show the image:
 showImage("Circle Mask [HSV - inRange]", hsvMask)
+writeImage(path+"circlesMask", hsvMask)
 
 # Detect the circles via Hough Circles:
 # Hough Circle detection is a method for finding circles in an image
@@ -158,3 +171,6 @@ for (x, y, r) in circles:
     circlesCounter += 1
 
     showImage("Detected Circles", inputImage)
+
+
+writeImage(path+"circlesDetected", inputImage)
