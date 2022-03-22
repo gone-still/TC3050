@@ -1,7 +1,7 @@
 # File        :   act-05.py (Activity 5 of 2022 Spring Vision Course)
-# Version     :   1.0.0
+# Version     :   1.0.1
 # Description :   Filter convolution demo
-# Date:       :   Mar 07, 2022
+# Date:       :   Mar 22, 2022
 # Author      :   Ricardo Acevedo-Avila (racevedoaa@gmail.com)
 # License     :   MIT
 
@@ -75,19 +75,20 @@ for j in range(0, imageHeight - loopBound):
                        windowX:windowX + windowWidth]
 
         # Show the kernel window:
-        # showImage("Filter Window (Kernel)", filterWindow)
+        showImage("Filter Window (Kernel)", filterWindow)
 
         # Create a deep copy of the image before modifing it:
-        rectangleImage = inputImage.copy()
+        # rectangleImage = inputImage # Shallow copy
+        rectangleImage = inputImage.copy() # Deep Copy
 
         # Draw the kernel area/rectangle on the input image:
-        color = (0, 0, 255) # BGR
+        color = (0, 255, 0) # BGR
         cv2.rectangle(rectangleImage, (int(windowX), int(windowY)),(int(windowX + windowWidth),
                        int(windowY + windowHeight)), color, 1)
 
         # Show images:
-        # showImage("Sliding Window", rectangleImage)
-        # showImage("Input Image", inputImage)
+        showImage("Sliding Window", rectangleImage)
+        showImage("Input Image", inputImage)
 
         # This variable stores the average of a pixel:
         pixelAverage = [0.0, 0.0, 0.0]
@@ -119,7 +120,9 @@ for j in range(0, imageHeight - loopBound):
         # Compute the output coordinates:
         # They must be INTEGER numbers:
         outY = j + math.floor(0.5 * windowSize)
+        # outY = j + (windowSize//2)
         outX = i + math.floor(0.5 * windowSize)
+        # outX = i + (windowSize//2)
 
         # Set the pixel average:
         outputImage[outY, outX] = pixelAverage
