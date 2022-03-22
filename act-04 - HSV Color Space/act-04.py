@@ -46,11 +46,6 @@ showImage("inputImage", inputImage)
 print("Image Height: " + str(imageHeight) + " Image Width: " + str(imageWidth) + " Image Channels: " + str(imageChannels))
 
 # Set the low threshold for the 3 channels:
-# lowThreshold = [130, 130, 20]
-# highThreshold = [255, 255, 110]
-
-# lowThreshold = [100, 100, 10]  # BGR
-# highThreshold = [255, 255, 100]
 
 lowThreshold = [210, 210, 20]  # BGR
 highThreshold = [255, 255, 70]
@@ -91,12 +86,9 @@ showImage("Input Image [HSV]", hsvImage)
 # the range to [50, 255]
 
 # Blue range:
-lowThreshold = [85, 100, 50]
+lowThreshold = [85, 50, 50]
 highThreshold = [100, 255, 255]
 
-# Gray:
-# lowThreshold = [0, 0, 0]
-# highThreshold = [255, 100, 150]
 
 # Create new image:
 circlesMaskHSV = np.zeros((imageHeight, imageWidth), dtype="uint8")
@@ -121,7 +113,7 @@ showImage("Circle Mask [HSV]", circlesMaskHSV)
 # cv2.inRange(lowThresh, highThresh):
 # The function accepts the thresholds as NumPY arrays:
 
-lowThreshold = np.array([85, 100, 50])
+lowThreshold = np.array([85, 50, 50])
 highThreshold = np.array([100, 255, 255])
 
 # Apply the ranges to HSV image:
@@ -157,10 +149,8 @@ circlesCounter = 1
 for (x, y, r) in circles:
     # The function receives the circle's center and its radius:
     cv2.circle(inputImage, (x, y), r, (0, 255, 0), 4)
-    # Draw centroid:
-    # Setting thickness=-1 fills the circle
-    cv2.circle(inputImage, (x, y), 5, (0, 0, 255), thickness=-1)
 
+    # Draw circle label:
     font = cv2.FONT_HERSHEY_SIMPLEX
     color = (0, 0, 0)  # black
     fontScale = 1
