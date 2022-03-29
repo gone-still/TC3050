@@ -1,7 +1,7 @@
 # File        :   act-06.py (Activity 6 of 2022 Spring Vision Course)
-# Version     :   1.0.0
+# Version     :   1.1.0
 # Description :   Morphology Demo
-# Date:       :   Mar 21, 2022
+# Date:       :   Mar 29, 2022
 # Author      :   Ricardo Acevedo-Avila (racevedoaa@gmail.com)
 # License     :   MIT
 
@@ -54,17 +54,16 @@ showImage("binaryImage [Otsu 1]", binaryImage)
 # Apply Morphology:
 
 # Set kernel (structuring element) size:
-kernelSize = 5  # 5
+kernelSize = 3  # 5
 # Set operation iterations:
-opIterations = 1
+opIterations = 2
 # Get the structuring element:
 morphKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernelSize, kernelSize))
 # Check out the kernel:
 print(morphKernel)
 
 # Perform Dilate:
-dilateImage = cv2.morphologyEx(binaryImage, cv2.MORPH_DILATE, morphKernel, None, None, opIterations,
-                               cv2.BORDER_REFLECT101)
+dilateImage = cv2.morphologyEx(binaryImage, cv2.MORPH_DILATE, morphKernel, morphKernel, iterations=opIterations)
 # Check out the image:
 showImage("Dilation", dilateImage)
 
@@ -72,15 +71,14 @@ showImage("Dilation", dilateImage)
 # an Erosion:
 
 # Set kernel (structuring element) size:
-kernelSize = 5  # 5
+kernelSize = 3  # 5
 # Set operation iterations:
-opIterations = 2
+opIterations = 3
 # Get the structuring element:
 morphKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernelSize, kernelSize))
 
 # Perform Erosion:
-erodeImage = cv2.morphologyEx(dilateImage, cv2.MORPH_ERODE, morphKernel, None, None, opIterations,
-                              cv2.BORDER_REFLECT101)
+erodeImage = cv2.morphologyEx(dilateImage, cv2.MORPH_ERODE, morphKernel, iterations=opIterations)
 # Check out the image:
 showImage("Erosion", erodeImage)
 
@@ -95,14 +93,14 @@ showImage("imgDifference", imgDifference)
 # Let's dilate it one more time to restore the coin's original area:
 
 # Set kernel (structuring element) size:
-kernelSize = 5
+kernelSize = 3  # 5
 # Set operation iterations:
 opIterations = 1
 # Get the structuring element:
 morphKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernelSize, kernelSize))
+
 # Perform Dilate:
-dilateImage = cv2.morphologyEx(erodeImage, cv2.MORPH_DILATE, morphKernel, None, None, opIterations,
-                               cv2.BORDER_REFLECT101)
+dilateImage = cv2.morphologyEx(erodeImage, cv2.MORPH_DILATE, morphKernel, iterations=opIterations)
 
 # Show the image:
 showImage("dilateImage 2", dilateImage)
@@ -111,41 +109,28 @@ showImage("dilateImage 2", dilateImage)
 imgDifference = binaryImage - dilateImage
 showImage("imgDifference 2", imgDifference)
 
-# Detect circles via Hough Circles:
-circles = cv2.HoughCircles(dilateImage, cv2.HOUGH_GRADIENT, dp=1.0, minDist=90, param1=300, param2=10,
-                           minRadius=30, maxRadius=115)
+# Detect contours:
+contours, _ = cv2.findContours(dilateImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-# Circles found:
-print("Circles Found: " + str(len(circles[0, :])))
+for c in contours:
+    # Approximate the contour to a circle:
+    (x, y), radius = cv2.minEnclosingCircle(c)
 
-# Integer conversion:
-circles = np.round(circles[0, :]).astype("int")
+    # Compute the center and radius:
+    center = (int(x), int(y))
+    radius = int(radius)
 
-# Set circle counter:
-circlesCounter = 1
+    # Draw the circles:
+    color = (0, 255, 0)  # Blue
+    cv2.circle(inputImage, center, radius, color, 3)
 
-# Prepare BGR image to draw circles onto:
-circleMask = cv2.cvtColor(dilateImage, cv2.COLOR_GRAY2BGR)
+    # Draw the centers:
+    color = (0, 0, 255)  # Red
+    radius = 1
+    cv2.circle(inputImage, center, radius, color, 3)
 
-# Draw circles:
-for (x, y, r) in circles:
-    # The function receives the circle's center and its radius:
-    cv2.circle(inputImage, (x, y), r, (0, 255, 0), 4)
-
-    # Draw circle label:
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    color = (0, 0, 0)  # black
-    fontScale = 1
-    fontThickness = 2
-    cv2.putText(inputImage, str(circlesCounter), (x, y), font, fontScale, color, fontThickness)
-
-    # Draw centroid:
-    # Setting thickness=-1 fills the circle
-    cv2.circle(inputImage, (x, y), 5, (0, 0, 255), thickness=-1)
-
-    # Increment number of circles:
-    circlesCounter += 1
-    showImage("Detected Circles", inputImage)
+    # Show Image:
+    showImage("Circles", inputImage)
 
 # Write Image:
 writeImage(path + "detectedCoins", inputImage)
