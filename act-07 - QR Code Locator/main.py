@@ -1,3 +1,10 @@
+# File        :   act-07.py (Activity 6 of 2022 Spring Vision Course)
+# Version     :   1.1.0
+# Description :   QR Locator
+# Date:       :   Apr 18, 2022
+# Author      :   Ricardo Acevedo-Avila (racevedoaa@gmail.com)
+# License     :   MIT
+
 import numpy as np
 import cv2
 
@@ -35,19 +42,6 @@ inputImage = readImage(path + fileName)
 
 showImage("Input Image", inputImage)
 
-# Get image dimensions
-# originalImageHeight, originalImageWidth = inputImage.shape[:2]
-# print("W: " + str(originalImageWidth) + ", H: " + str(originalImageHeight))
-
-# Resize at a fixed scale:
-# resizePercent = 90
-# resizedWidth = int(originalImageWidth * resizePercent / 100)
-# resizedHeight = int(originalImageHeight * resizePercent / 100)
-
-# Resize image
-# resizedImage = cv2.resize(inputImage, (resizedWidth, resizedHeight), interpolation=cv2.INTER_LINEAR)
-# showImage("resizedImage", resizedImage)
-
 # To Gray
 grayscaleImage = cv2.cvtColor(inputImage, cv2.COLOR_BGR2GRAY)
 showImage("grayscaleImage", grayscaleImage)
@@ -68,9 +62,9 @@ cannyEdges = cv2.Canny(grayscaleImage, 100, 200)
 showImage("cannyEdges", cannyEdges)
 
 # (After) Apply morphology:
-# morphoKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-# cannyEdges = cv2.morphologyEx(cannyEdges, cv2.MORPH_CLOSE, morphoKernel, iterations=1)  # Iterations : 1, 5, 10
-# showImage("cannyEdges [Filtered]", cannyEdges)
+morphoKernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+cannyEdges = cv2.morphologyEx(cannyEdges, cv2.MORPH_CLOSE, morphoKernel, iterations=1)  # Iterations : 1, 5, 10
+showImage("cannyEdges [Filtered]", cannyEdges)
 
 # Find the EXTERNAL contours on the binary image:
 # Change the contour mode from RETR_CCOMP to RETR_EXTERNAL
@@ -91,7 +85,7 @@ for c in contours:
     # Draw contour:
     color = (0, 0, 255)
     cv2.drawContours(cannyEdgesColor, [c], 0, color, 3)
-    showImage("Contours", cannyEdgesColor)
+    # showImage("Contours", cannyEdgesColor)
 
     # Convert the polygon to a bounding rectangle:
     boundRect = cv2.boundingRect(c)
@@ -121,7 +115,7 @@ for c in contours:
 
     # Print properties:
     print("C: " + str(contourCounter) + " Area: " + str(rectArea) + " Aspect Ratio: " + str(rectAspectRatio))
-    # showImage("Bounding Rectangles", inputImage)
+    # (Before) showImage("Bounding Rectangles", inputImage)
 
     # Increase counter:
     contourCounter += 1
@@ -155,6 +149,7 @@ for i in range(len(codeRectangles)):
     # (After) Include Offset
     offSet = 0
 
+    # New dimensions after offset:
     rectX = int(currentRectangle[0] + offSet)
     rectY = int(currentRectangle[1] + offSet)
     rectWidth = int(currentRectangle[2] - 2 * offSet)
@@ -179,6 +174,7 @@ for i in range(len(codeRectangles)):
 
         # Draw the corners:
         for j in range(len(points)):
+
             # Coordinates of the point:
             x = int(points[j][0])
             y = int(points[j][1])
@@ -194,4 +190,4 @@ for i in range(len(codeRectangles)):
 
     else:
         print("QR Code not detected")
-        cv2.imshow("Results", inputImage)
+        # cv2.imshow("Results", inputImage)
