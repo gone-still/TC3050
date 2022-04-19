@@ -1,5 +1,5 @@
 # File        :   act-07.py (Activity 6 of 2022 Spring Vision Course)
-# Version     :   1.1.0
+# Version     :   1.1.1
 # Description :   QR Locator
 # Date:       :   Apr 18, 2022
 # Author      :   Ricardo Acevedo-Avila (racevedoaa@gmail.com)
@@ -58,7 +58,7 @@ showImage("grayscaleImage [Blurred]", grayscaleImage)
 cannyThresh1 = 100
 cannyThresh2 = 2 * cannyThresh1
 
-cannyEdges = cv2.Canny(grayscaleImage, 100, 200)
+cannyEdges = cv2.Canny(grayscaleImage, cannyThresh1, cannyThresh2)
 showImage("cannyEdges", cannyEdges)
 
 # (After) Apply morphology:
