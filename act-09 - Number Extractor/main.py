@@ -1,9 +1,16 @@
-# Imports:
-import pytesseract  # tesseract (previous installation)
-import numpy as np  # numpy
-import cv2  # opencv
-import math
-import os  # os for paths
+import numpy as np
+import cv2
+from datetime import date, datetime
+
+
+# Reads image via OpenCV:
+def readImage(imagePath):
+    # Loads image:
+    inputImage = cv2.imread(imagePath)
+    # Checks if image was successfully loaded:
+    if inputImage is None:
+        print("readImage>> Error: Could not load Input image.")
+    return inputImage
 
 
 # Defines a re-sizable image window:
@@ -13,158 +20,196 @@ def showImage(imageName, inputImage):
     cv2.waitKey(0)
 
 
-# Writes a png image to disk:
+# Writes an PGN image:
 def writeImage(imagePath, inputImage):
     imagePath = imagePath + ".png"
     cv2.imwrite(imagePath, inputImage, [cv2.IMWRITE_PNG_COMPRESSION, 0])
     print("Wrote Image: " + imagePath)
 
 
-# Image path:
-fileName = "kxL3a.png"
+# Set the resources paths:
+path = "D://opencvImages//sudoku//"
+fileName = "dataset.png"
 
-# Create os-indepent path:
-path = "D://opencvImages//"
+# Dataset info:
+writeSamples = False
 
-# Read image:
-inputImage = cv2.imread(path + fileName)
+datasetPath = path + "samples//"
+dataSamples = 30
+dataClasses = 9
 
-# To Grayscale:
+sampleHeight = 70
+sampleWidth = sampleHeight
+
+# Data set matrix:
+dataSet = np.zeros((dataClasses, dataSamples), np.uint8)
+inputImage = readImage(path + fileName)
+# inputImageCopy = inputImage.copy()
+
+showImage("Input Image", inputImage)
+
+# To Gray
 grayscaleImage = cv2.cvtColor(inputImage, cv2.COLOR_BGR2GRAY)
+showImage("grayscaleImage", grayscaleImage)
 
-# Binary:
-thresh, binaryImage = cv2.threshold(grayscaleImage, 0, 255, cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
-showImage("binaryImage 1", binaryImage)
+# Otsu:
+_, binaryImage = cv2.threshold(grayscaleImage, 0, 255, cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)
+showImage("binaryImage", binaryImage)
 
-thresh = 0.7 * thresh
-thresh, binaryImage = cv2.threshold(grayscaleImage, thresh, 255, cv2.THRESH_BINARY_INV)
-showImage("binaryImage 2", binaryImage)
+# Color copy:
+binaryColor = cv2.cvtColor(binaryImage, cv2.COLOR_GRAY2BGR)
 
+# Get Contours:
+contours, _ = cv2.findContours(binaryImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-# Row reduction:
-reducedImg = cv2.reduce(binaryImage, 0, cv2.REDUCE_SUM, dtype=cv2.CV_32S)[0]
+for c in contours:
 
-print(reducedImg)
+    # Get contour area:
+    blobArea = cv2.contourArea(c)
+    print(blobArea)
 
-w = reducedImg.shape[0]
+    minArea = 1000
 
-blobMask = np.zeros((1, w), dtype="uint8")
-showImage("blobMask", blobMask)
+    if blobArea > minArea:
 
-for i in range(w):
-    currentValue = reducedImg[i]
-    thresh = 1000
-    if currentValue > thresh:
-        blobMask[0, i] = 255
-    else:
-        blobMask[0, i] = 0
+        # Get Bounding Rect:
+        bondingRect = cv2.boundingRect(c)
 
-showImage("blobMask", blobMask)
+        # Get the bounding rect data:
+        rectX = int(bondingRect[0])
+        rectY = int(bondingRect[1])
+        rectWidth = int(bondingRect[2])
+        rectHeight = int(bondingRect[3])
 
-colorMask = cv2.cvtColor(blobMask, cv2.COLOR_GRAY2BGR)
-colorMaskCopy = colorMask.copy()
+        color = (0, 255, 0)
+        cv2.rectangle(binaryColor, (rectX, rectY), (rectX + rectWidth, rectY + rectHeight), color, 2)
+        showImage("binaryColor", binaryColor)
 
-contours, hierarchy = cv2.findContours(blobMask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        # Crop Area:
+        numbersCrop = binaryImage[rectY:rectY + rectHeight, rectX:rectX + rectWidth]
+        showImage("numbersCrop", numbersCrop)
 
-widthList = []
-xList = []
+        # Copy:
+        numbersCropCopy = numbersCrop.copy()
+        numbersCropCopy = cv2.cvtColor(numbersCropCopy, cv2.COLOR_GRAY2BGR)
 
-for i, c in enumerate(contours):
-    # Get the contours bounding rectangle:
-    boundRect = cv2.boundingRect(c)
+        # Flood-Fill at corner:
+        fillColors = [(255, 255, 255), (0, 0, 0)]
+        for i in range(len(fillColors)):
+            print(i)
+            leftCorner = (0, 0)
+            fillColor = fillColors[i]
+            cv2.floodFill(numbersCrop, None, leftCorner, fillColor)
+            showImage("numbersCrop [Filled]", numbersCrop)
 
-    # Get the dimensions of the bounding rectangle:
-    rectX = boundRect[0]
-    rectY = boundRect[1]
+        # St cell dimensions:
+        cellHeight = rectHeight // dataClasses
+        cellWidth = rectWidth // dataSamples
 
-    rectWidth = boundRect[2]
-    rectHeight = boundRect[3]
+        print("Cell W: " + str(cellWidth) + " H: " + str(cellHeight))
 
-    print((rectX, rectY, rectWidth))
+        dataMatrix = []
 
-    widthList.append(rectWidth)
-    xList.append(rectX)
+        # Loop through de dataset, extract blobs:
+        for y in range(dataClasses):
 
-    # Set bounding rectangle:
-    color = (0, 0, 255)
+            blobList = []
 
-    cv2.line(colorMask, (int(rectX), int(rectY)), (int(rectX), int(rectY)), color, 1)
+            for x in range(dataSamples):
+                # Set crop:
+                blobX = x * cellWidth
+                blobY = y * cellHeight
+                blobW = blobX + cellWidth
+                blobH = blobY + cellHeight
 
-    showImage("Blobs", colorMask)
+                # Crop:
+                currentCrop = numbersCrop[blobY:blobH, blobX:blobW]
+                blobList.append(currentCrop)
 
-meanValue = np.mean(np.array(widthList))
-medianValue = np.median(np.array(widthList))
+                showImage("currentCrop", currentCrop)
 
-sortedX = np.sort(np.array(xList))
+                # Draw Rectangle:
+                color = (0, 255, 0)
+                cv2.rectangle(numbersCropCopy, (blobX, blobY), (blobW, blobH), color, 2)
+                showImage("numbersCropCopy", numbersCropCopy)
+                writeImage(path+"datasetMatrix", numbersCropCopy)
 
-print(meanValue)
-print(medianValue)
+            dataMatrix.append(blobList)
 
-(imageHeight, imageWidth) = grayscaleImage.shape[:2]
+        # The matrix of images:
+        dataMatrix = np.asarray(dataMatrix)
+        (datasetHeight, datasetWidth) = dataMatrix.shape[:2]
 
-for i, c in enumerate(contours):
-    # Get the contours bounding rectangle:
-    boundRect = cv2.boundingRect(c)
+        # Get samples dir:
+        # samplesDirs = os.listdir(datasetPath)
 
-    # Get the dimensions of the bounding rectangle:
-    rectX = boundRect[0]
-    rectY = boundRect[1]
+        # Save the samples:
+        for y in range(datasetHeight):
+            for x in range(datasetWidth):
+                # Get crop:
+                currentCell = dataMatrix[y][x]
+                showImage("Current Cell", currentCell)
+                writeImage(path + "currentCell", currentCell)
 
-    rectWidth = boundRect[2]
-    rectHeight = imageHeight
+                (ch, cw) = currentCell.shape[:2]
+                print((ch, cw))
 
-    thresh = 0.5
+                # Get Contours:
+                cellContours, _ = cv2.findContours(currentCell, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    if rectWidth > medianValue + 0.5 * medianValue:
-        # Set bounding rectangle:
-        color = (0, 0, 0)
-        rectX = rectX + 0.5 * rectWidth
-        cv2.line(blobMask, (int(rectX), int(rectY)), (int(rectX), int(rectY)), color, 1)
+                for s in cellContours:
 
-    showImage("blobMask", blobMask)
+                    # Get contour area:
+                    blobArea = cv2.contourArea(s)
+                    print(blobArea)
 
-for i in range(imageHeight):
-    blobMask = np.concatenate((blobMask, blobMask), axis=0)
+                    minArea = 10
 
-showImage("blobMask reshaped", blobMask)
-# print(xList)
-# print(sortedX)
-# lastElement = sortedX[-1]
-# firstElement = sortedX[0]
-# charactersFound = math.ceil((lastElement - firstElement) / medianValue)
-#
-# print("charactersFound: " + str(charactersFound))
-#
-# # medianValue = 21
-#
-# (imageHeight, imageWidth) = grayscaleImage.shape[:2]
-#
-# resizedWidth = int(firstElement + charactersFound * medianValue)
-# # resizedHeight = int(imageWidth * resizePercent / 100)
-#
-# showImage("inputImage", inputImage)
-#
-# resized = cv2.resize(inputImage, (resizedWidth, imageHeight), interpolation=cv2.INTER_LINEAR)
-#
-# showImage("resized", resized)
-#
-# firstElement = firstElement * (resizedWidth/imageWidth)
-#
-# for i in range(charactersFound):
-#     rectX = firstElement + i * medianValue
-#     rectY = 0
-#     rectWidth = medianValue
-#     rectHeight = imageHeight
-#
-#     # Set bounding rectangle:
-#     color = (0, 0, 255)
-#     cv2.rectangle(inputImage, (int(rectX), int(rectY)),
-#                   (int(rectX + rectWidth), int(rectY + rectHeight)), color, 1)
-#
-#     cv2.rectangle(resized, (int(rectX), int(rectY)),
-#                   (int(rectX + rectWidth), int(rectY + rectHeight)), color, 1)
-#
-#     print((i, rectX))
-#
-#     showImage("Rects 1", inputImage)
-#     showImage("Rects 2", resized)
+                    if blobArea > minArea:
+                        # Rect:
+                        boundingRect = cv2.boundingRect(s)
+
+                        # Canvas:
+                        canvas = np.zeros((sampleHeight, sampleWidth, 3), np.uint8)
+                        canvasCopy = canvas.copy()
+                        print("Canvas W: " + str(sampleWidth) + ", H: " + str(sampleHeight))
+
+                        # Get the bounding rect data:
+                        rectX = int(boundingRect[0])
+                        rectY = int(boundingRect[1])
+                        rectWidth = int(boundingRect[2])
+                        rectHeight = int(boundingRect[3])
+
+                        # Crop:
+                        currentSample = currentCell[rectY:rectY + rectHeight, rectX:rectX + rectWidth]
+                        currentSample = cv2.cvtColor(currentSample, cv2.COLOR_GRAY2BGR)
+
+                        currentSampleCopy = currentSample.copy()
+
+                        print("currentSample W: " + str(rectWidth) + ", H: " + str(rectHeight))
+
+                        cv2.circle(currentSampleCopy, (int(0.5 * rectWidth), int(0.5 * rectHeight)), 2, (255, 0, 0), 5)
+                        showImage("currentSampleCopy", currentSampleCopy)
+
+                        ox = int(0.5 * sampleWidth - 0.5 * rectWidth)
+                        oy = int(0.5 * sampleHeight - 0.5 * rectHeight)
+
+                        color = (0, 255, 0)  # Blue
+                        cv2.circle(canvasCopy, (ox, oy), 2, color, 3)
+                        cv2.circle(canvasCopy, (ox, oy), 2, color, 3)
+
+                        canvas[oy:oy + rectHeight, ox:ox + rectWidth] = currentSample
+                        canvasCopy[oy:oy + rectHeight, ox:ox + rectWidth] = currentSample
+                        cv2.circle(canvasCopy, (int(0.5 * sampleWidth), int(0.5 * sampleHeight)), 2, (0, 0, 255), 3)
+
+                        # Create out path:
+                        writePath = datasetPath + str(y+1) + "//" + "s_" + str(x)
+                        print(writePath)
+
+                        if writeSamples:
+                            writeImage(writePath, canvas)
+
+                        showImage("canvas", canvas)
+                        showImage("canvasCopy", canvasCopy)
+
+                        writeImage(path + "finalCanvas", canvas)
