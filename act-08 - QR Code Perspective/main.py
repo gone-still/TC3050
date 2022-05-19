@@ -1,3 +1,10 @@
+# File        :   act-08.py (Activity 8 of 2022 Spring Vision Course)
+# Version     :   1.0.1
+# Description :   QR Locator/Perspective
+# Date:       :   Apr 24, 2022
+# Author      :   Ricardo Acevedo-Avila (racevedoaa@gmail.com)
+# License     :   MIT
+
 import numpy as np
 import cv2
 import webbrowser
@@ -32,7 +39,6 @@ path = "D://opencvImages//"
 fileName = "rawCode02.png"
 
 inputImage = readImage(path + fileName)
-# inputImageCopy = inputImage.copy()
 showImage("Input Image", inputImage)
 
 # To Grayscale:
