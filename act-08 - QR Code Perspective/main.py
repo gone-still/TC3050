@@ -1,7 +1,7 @@
 # File        :   act-08.py (Activity 8 of 2022 Spring Vision Course)
-# Version     :   1.0.1
+# Version     :   1.0.2
 # Description :   QR Locator/Perspective
-# Date:       :   Apr 24, 2022
+# Date:       :   Feb 22, 2023
 # Author      :   Ricardo Acevedo-Avila (racevedoaa@gmail.com)
 # License     :   MIT
 
@@ -38,16 +38,17 @@ def writeImage(imagePath, inputImage):
 path = "D://opencvImages//"
 fileName = "rawCode02.png"
 
+# Read the image via OpenCV and show it:
 inputImage = readImage(path + fileName)
 showImage("Input Image", inputImage)
 
-# To Grayscale:
+# Conversion to Grayscale:
 grayscaleImage = cv2.cvtColor(inputImage, cv2.COLOR_BGR2GRAY)
 
-# To HSV:
+# Conversion to HSV:
 hsvImage = cv2.cvtColor(inputImage, cv2.COLOR_BGR2HSV)
 
-# Split:
+# Split the HSV channels into individual Mats:
 (H, S, V) = cv2.split(hsvImage)
 
 # Show channels:
@@ -66,6 +67,12 @@ showImage("binaryImage [Otsu]", binaryImage)
 
 # Get contours:
 contours, _ = cv2.findContours(binaryImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+# Draw contours:
+binaryColor = cv2.cvtColor(binaryImage, cv2.COLOR_GRAY2BGR)
+color = (0, 0, 255)
+cv2.drawContours(binaryColor, contours, 0, color, 3)
+showImage("Contours", binaryColor)
 
 # Loop through contours:
 for c in contours:
@@ -106,6 +113,8 @@ for c in contours:
             x = int(currentPoint[0])
             y = int(currentPoint[1])
 
+            print("P: " + str(p) + " (" + str(x) + ", " + str(y)+")")
+
             # Draw the corner points:
             cv2.circle(inputImage, (x, y), 5, (255, 0, 0), 5)
 
@@ -122,10 +131,10 @@ for c in contours:
 
         # Target Points:
         outPoints = np.array([
-            [targetWidth, 0],  # 1
-            [0, 0],  # 2
-            [0, targetHeight],  # 3
-            [targetWidth, targetHeight]],  # 4
+            [targetWidth, 0],               # 1
+            [0, 0],                         # 2
+            [0, targetHeight],              # 3
+            [targetWidth, targetHeight]],   # 4
             dtype="float32")
 
         # Compute the perspective transform matrix and then apply it
